@@ -1,0 +1,16 @@
+<svg width="640" height="184" viewBox="0 0 640 184" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="184" rx="22" fill="#0F1013"/>
+  <rect x="0.5" y="0.5" width="639" height="183" rx="21.5" stroke="#30333B"/>
+  <g transform="translate(38 28) scale(1)">
+    <path d="M30 24H18L42 64L18 104H30" stroke="#8B5CF6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="18" cy="24" r="8" fill="#8B5CF6"/>
+    <circle cx="18" cy="104" r="8" fill="#8B5CF6"/>
+    <path d="M98 24H110L86 64L110 104H98" stroke="#6366F1" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="110" cy="24" r="8" fill="#6366F1"/>
+    <circle cx="110" cy="104" r="8" fill="#6366F1"/>
+    <circle cx="64" cy="64" r="25" fill="#15162E" stroke="#22D3EE" stroke-width="5"/>
+    <path d="M52 64L60 72L77 54" stroke="#22D3EE" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="194" y="84" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="40" font-weight="700" letter-spacing="-1.4" fill="#F2F3F5">agent-eval</text>
+  <text x="194" y="119" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="500" fill="#A1A5AD">Avaliações explicáveis para agentes de IA</text>
+</svg>
