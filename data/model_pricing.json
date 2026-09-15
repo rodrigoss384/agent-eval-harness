@@ -1,0 +1,25 @@
+{
+  "version": "2026-09-09",
+  "currency": "USD",
+  "models": {
+    "gpt-4.1-mini": {
+      "standard": {
+        "input_per_million_usd": 0.40,
+        "output_per_million_usd": 1.60,
+        "source_url": "https://developers.openai.com/api/docs/models/gpt-4.1-mini"
+      }
+    },
+    "gemini-3.1-flash-lite": {
+      "free": {
+        "input_per_million_usd": 0,
+        "output_per_million_usd": 0,
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing"
+      },
+      "paid_standard": {
+        "input_per_million_usd": 0.25,
+        "output_per_million_usd": 1.50,
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing"
+      }
+    }
+  }
+}
