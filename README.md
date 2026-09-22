@@ -2,7 +2,13 @@
   <img src="docs/logo.svg" alt="Agent Eval Harness" width="640">
 </p>
 
-Laboratório local para executar avaliações de agentes e entender, em linguagem direta, por que cada resposta passou, falhou ou ficou inconclusiva.
+> **Avaliação de agentes de IA sem caixa-preta.** Um harness que mostra *por que* cada resposta passou, falhou ou ficou inconclusiva, com o racional exposto na interface.
+>
+> **Problema:** avaliação invisível é avaliação inútil. LLM-as-judge sozinho esconde o critério e o viés.
+>
+> **Prova:** 3 métodos (determinístico, programático, LLM-as-judge) + 4 protocolos de auditoria de viés + 4 estados de veredito, em 24 casos sintéticos.
+
+Harness local para executar avaliações de agentes e entender, em linguagem direta, por que cada resposta passou, falhou ou ficou inconclusiva.
 
 ## Comece em dois comandos
 
