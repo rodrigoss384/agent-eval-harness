@@ -25,19 +25,35 @@ def _catalog() -> dict[str, Any]:
 
 
 def estimate_cost(
-    *, model: str, pricing_profile: str, input_tokens: int | None, output_tokens: int | None
+    *,
+    model: str,
+    pricing_profile: str,
+    input_tokens: int | None,
+    output_tokens: int | None,
+    cached_input_tokens: int | None = None,
 ) -> CostEstimate:
     """Calcula uma estimativa; nunca a apresenta como cobrança real."""
     catalog = _catalog()
-    entry = catalog["models"].get(model, {}).get(pricing_profile)
+    # Provider snapshots retain their family price; never substitute a different model.
+    price_model = "gpt-4.1-mini" if model.startswith("gpt-4.1-mini-") else model
+    if model.startswith("typesafe/jev-1.13-"):
+        price_model = "typesafe/jev-1.13"
+    entry = catalog["models"].get(price_model, {}).get(pricing_profile)
     if not entry or input_tokens is None or output_tokens is None:
         return CostEstimate("unavailable", None, "", str(catalog["version"]), None)
     input_rate = Decimal(str(entry["input_per_million_usd"]))
     output_rate = Decimal(str(entry["output_per_million_usd"]))
-    value = (Decimal(input_tokens) * input_rate + Decimal(output_tokens) * output_rate) / Decimal(
-        1_000_000
+    cached = min(input_tokens, max(0, cached_input_tokens or 0))
+    cache_rate = Decimal(str(entry.get("cached_input_per_million_usd", input_rate)))
+    value = (
+        Decimal(input_tokens - cached) * input_rate
+        + Decimal(cached) * cache_rate
+        + Decimal(output_tokens) * output_rate
+    ) / Decimal(1_000_000)
+    formula = (
+        f"(({input_tokens} - {cached}) × {input_rate} + {cached} × "
+        f"{cache_rate} + {output_tokens} × {output_rate}) / 1.000.000"
     )
-    formula = f"({input_tokens} × {input_rate} + {output_tokens} × {output_rate}) / 1.000.000"
     return CostEstimate(
         "estimated",
         float(value.quantize(Decimal("0.0000000001"))),

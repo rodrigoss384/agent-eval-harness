@@ -1,6 +1,6 @@
 [project]
 name = "agent-eval-harness"
-version = "1.0.0"
+version = "1.1.0"
 description = "Harness local de avaliação de agentes com racional auditável."
 readme = "README.md"
 requires-python = ">=3.12,<3.15"

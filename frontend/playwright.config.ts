@@ -20,7 +20,7 @@ export default defineConfig({
       DATABASE_PATH: '/tmp/agent-eval-harness-playwright.db',
       STATIC_DIR: 'frontend/dist',
       ...(process.env.RUN_LIVE_UI === '1' ? {} : {
-        OPENAI_API_KEY: '', GEMINI_API_KEY: '', OPENROUTER_API_KEY: '', OPENCODE_API_KEY: '',
+        JEV_API_KEY: '', OPENAI_API_KEY: '', GEMINI_API_KEY: '', OPENROUTER_API_KEY: '', OPENCODE_API_KEY: '',
       }),
     },
   },

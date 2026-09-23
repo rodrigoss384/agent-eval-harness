@@ -19,7 +19,7 @@ function StatusCard({ icon: Icon, label, value, ready }: { icon: typeof Server; 
 export function StartScreen() {
   const health = useQuery({ queryKey: ['health'], queryFn: getHealth, retry: false })
   const models = useQuery({ queryKey: ['models'], queryFn: listModels, staleTime: 30_000 })
-  const required = ['agent', 'judge_alt']
+  const required = ['agent', 'judge']
   const liveReady = required.every((role) => models.data?.some((model) => model.role === role && model.configured))
 
   return (
@@ -27,9 +27,15 @@ export function StartScreen() {
       <header className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Comece aqui</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-primary sm:text-4xl">Entenda por que uma avaliação passou ou falhou</h1>
-        <p className="mt-4 text-base leading-7 text-secondary">Escolha uma demonstração local, sem chaves e sem custo, ou execute agentes e juízes reais. Nos dois caminhos, cada veredito mostra a regra, o observado e a justificativa.</p>
+        <p className="mt-4 text-base leading-7 text-secondary">Escolha uma demonstração local, sem chaves e sem custo, ou execute agentes e juízes reais. Compare a decisão probabilística do Jev com a avaliação justificada de um LLM, usando a mesma resposta e métricas rastreáveis.</p>
       </header>
 
+      <section className="mt-8 rounded-2xl border border-accent/30 bg-panel p-6 sm:p-8" aria-labelledby="comparison-intro">
+        <p className="text-xs font-semibold uppercase tracking-wider text-accent">Novo na versão 1.1</p>
+        <h2 id="comparison-intro" className="mt-3 text-2xl font-semibold">Decidir e explicar são capacidades diferentes</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-secondary">Veja Jev e GPT-4.1 mini lado a lado: acertos, divergências, tempo, tokens, custo e disponibilidade de justificativa. Explore uma comparação real já registrada sem usar suas chaves.</p>
+        <div className="mt-5 flex flex-wrap gap-3"><Link to="/compare" search={{ benchmark: 'example' }} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong">Conhecer sem gastar <ArrowRight className="size-4" /></Link><Link to="/compare" search={{ benchmark: undefined }} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold">Comparar com modelos reais</Link></div>
+      </section>
       <section aria-labelledby="path-title" className="mt-8">
         <h2 id="path-title" className="sr-only">Escolha seu caminho</h2>
         <div className="grid gap-4 lg:grid-cols-2">
@@ -51,7 +57,7 @@ export function StartScreen() {
             <h2 className="mt-2 text-xl font-semibold text-primary">Executar com modelos reais</h2>
             <p className="mt-2 text-sm leading-6 text-secondary">Escolha um caso do dataset e acompanhe três tentativas, recuperação de contexto, geração, julgamento e métricas.</p>
             <div className={`mt-4 rounded-lg border p-3 text-sm ${liveReady ? 'border-success/30 bg-success/8 text-success' : 'border-warning/30 bg-warning/8 text-warning'}`}>
-              {liveReady ? 'Providers necessários configurados.' : 'Configure o agente e o juiz alternativo no .env antes de iniciar.'}
+              {liveReady ? 'Providers necessários configurados.' : 'Configure o agente e o juiz principal no .env antes de iniciar.'}
             </div>
             <Link to="/runs" search={{ run: undefined, session: undefined, dataset: undefined, mode: 'live' }} className="mt-6 inline-flex items-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-semibold text-primary hover:border-accent">Ver execução real <ArrowRight aria-hidden="true" className="size-4" /></Link>
           </article>

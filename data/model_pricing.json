@@ -1,12 +1,14 @@
 {
-  "version": "2026-09-09",
+  "version": "2026-09-23",
   "currency": "USD",
   "models": {
     "gpt-4.1-mini": {
       "standard": {
-        "input_per_million_usd": 0.40,
-        "output_per_million_usd": 1.60,
-        "source_url": "https://developers.openai.com/api/docs/models/gpt-4.1-mini"
+        "input_per_million_usd": 0.4,
+        "output_per_million_usd": 1.6,
+        "source_url": "https://developers.openai.com/api/docs/models/gpt-4.1-mini",
+        "cached_input_per_million_usd": 0.1,
+        "verified_at": "2026-09-23"
       }
     },
     "gemini-3.1-flash-lite": {
@@ -17,8 +19,16 @@
       },
       "paid_standard": {
         "input_per_million_usd": 0.25,
-        "output_per_million_usd": 1.50,
+        "output_per_million_usd": 1.5,
         "source_url": "https://ai.google.dev/gemini-api/docs/pricing"
+      }
+    },
+    "typesafe/jev-1.13": {
+      "standard": {
+        "input_per_million_usd": 0.042,
+        "output_per_million_usd": 0,
+        "source_url": "https://openrouter.ai/api/v1/models?output_modalities=decisions",
+        "verified_at": "2026-09-23"
       }
     }
   }

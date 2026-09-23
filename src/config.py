@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     openrouter_api_key: SecretStr | None = None
     opencode_api_key: SecretStr | None = None
+    jev_api_key: SecretStr | None = None
+    jev_base_url: str = "https://openrouter.ai/api/alpha/decisions"
+    jev_model: str = "typesafe/jev-1.13"
 
     openai_base_url: str = PROVIDER_BASE_URLS["openai"]
     gemini_base_url: str = PROVIDER_BASE_URLS["gemini"]

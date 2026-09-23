@@ -1,0 +1,528 @@
+{
+  "version": "paired-candidates-v1",
+  "data_classification": "synthetic",
+  "candidates": [
+    {
+      "id": "case_001-correct",
+      "case_id": "case_001",
+      "output": "Brasília",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_001-incorrect",
+      "case_id": "case_001",
+      "output": "São Paulo",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'São Paulo' contradiz a referência 'Brasília'."
+    },
+    {
+      "id": "case_factual_002-correct",
+      "case_id": "case_factual_002",
+      "output": "Logs de acesso são retidos por 180 dias. Trilhas administrativas são retidas por 365 dias. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_002-incorrect",
+      "case_id": "case_factual_002",
+      "output": "Logs de acesso são retidos por 30 dias. Trilhas administrativas são retidas por 365 dias. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '30 dias' contradiz a referência '180 dias'."
+    },
+    {
+      "id": "case_factual_003-correct",
+      "case_id": "case_factual_003",
+      "output": "Até R$ 250 o reembolso pode ser automático. Acima de R$ 250 exige revisão humana. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_003-incorrect",
+      "case_id": "case_factual_003",
+      "output": "Até R$ 2500 o reembolso pode ser automático. Acima de R$ 250 exige revisão humana. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'R$ 2500' contradiz a referência 'R$ 250'."
+    },
+    {
+      "id": "case_factual_004-correct",
+      "case_id": "case_factual_004",
+      "output": "Atlas tem RPO de 15 minutos e RTO de 60 minutos. Testes de restauração são mensais. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_004-incorrect",
+      "case_id": "case_factual_004",
+      "output": "Atlas tem RPO de 150 minutos e RTO de 60 minutos. Testes de restauração são mensais. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '150 minutos' contradiz a referência '15 minutos'."
+    },
+    {
+      "id": "case_factual_005-correct",
+      "case_id": "case_factual_005",
+      "output": "Exige validação fiscal e checagem de sanções. Também exige DPA e aprovação de Segurança. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_005-incorrect",
+      "case_id": "case_factual_005",
+      "output": "Dispensa validação fiscal e checagem de sanções. Também exige DPA e aprovação de Segurança. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'Dispensa validação fiscal e checagem de sanções.' contradiz a referência 'Exige validação fiscal e checagem de sanções.'."
+    },
+    {
+      "id": "case_factual_006-correct",
+      "case_id": "case_factual_006",
+      "output": "P1 escala em 10 minutos e atualiza a cada 30 minutos. P2 escala em 30 minutos e atualiza a cada 2 horas. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_006-incorrect",
+      "case_id": "case_factual_006",
+      "output": "P1 escala em 60 minutos e atualiza a cada 30 minutos. P2 escala em 30 minutos e atualiza a cada 2 horas. [fact-src-1] [fact-src-2]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '60 minutos' contradiz a referência '10 minutos'."
+    },
+    {
+      "id": "case_factual_007-correct",
+      "case_id": "case_factual_007",
+      "output": "Dados ativos são eliminados em 30 dias. Backups são eliminados progressivamente em 90 dias. O encarregado emite certificado de eliminação. [fact-src-1] [fact-src-2] [fact-src-3]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_007-incorrect",
+      "case_id": "case_factual_007",
+      "output": "Dados ativos são eliminados em 300 dias. Backups são eliminados progressivamente em 90 dias. O encarregado emite certificado de eliminação. [fact-src-1] [fact-src-2] [fact-src-3]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '300 dias' contradiz a referência '30 dias'."
+    },
+    {
+      "id": "case_factual_008-correct",
+      "case_id": "case_factual_008",
+      "output": "Solicitante cria, mas não aprova. Aprovador Financeiro aprova se não for o criador. Administrador técnico não pode aprovar. [fact-src-1] [fact-src-2] [fact-src-3]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_factual_008-incorrect",
+      "case_id": "case_factual_008",
+      "output": "Solicitante cria, mas não aprova. Aprovador Financeiro aprova se não for o criador. Administrador técnico pode aprovar. [fact-src-1] [fact-src-2] [fact-src-3]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'Administrador técnico pode aprovar.' contradiz a referência 'Administrador técnico não pode aprovar.'."
+    },
+    {
+      "id": "case_retrieval_001-correct",
+      "case_id": "case_retrieval_001",
+      "output": "Separado e não faturado cancela após liberação do estoque. Estorno ocorre em até 5 dias úteis após liberação. [ord-01] [ord-02]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_001-incorrect",
+      "case_id": "case_retrieval_001",
+      "output": "Separado e não faturado cancela após liberação do estoque. Estorno ocorre em até 50 dias úteis após liberação. [ord-01] [ord-02]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '50 dias úteis' contradiz a referência '5 dias úteis'."
+    },
+    {
+      "id": "case_retrieval_002-correct",
+      "case_id": "case_retrieval_002",
+      "output": "Emergencial exige ticket P1 e aprovação do gestor e Segurança. Expira após 4 horas e gera revisão posterior. [acc-01] [acc-02]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_002-incorrect",
+      "case_id": "case_retrieval_002",
+      "output": "Emergencial exige ticket P1 e aprovação do gestor e Segurança. Expira após 48 horas e gera revisão posterior. [acc-01] [acc-02]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '48 horas' contradiz a referência '4 horas'."
+    },
+    {
+      "id": "case_retrieval_003-correct",
+      "case_id": "case_retrieval_003",
+      "output": "Manter entre 2°C e 8°C com sensor contínuo. Excursão bloqueia entrega e exige responsável técnico. [log-01] [log-02]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_003-incorrect",
+      "case_id": "case_retrieval_003",
+      "output": "Manter entre 2°C e 18°C com sensor contínuo. Excursão bloqueia entrega e exige responsável técnico. [log-01] [log-02]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '18°C' contradiz a referência '8°C'."
+    },
+    {
+      "id": "case_retrieval_004-correct",
+      "case_id": "case_retrieval_004",
+      "output": "Acima de R$ 50 mil exige balanço e comitê de crédito. [crd-02]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_004-incorrect",
+      "case_id": "case_retrieval_004",
+      "output": "Acima de R$ 500 mil exige balanço e comitê de crédito. [crd-02]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'R$ 500 mil' contradiz a referência 'R$ 50 mil'."
+    },
+    {
+      "id": "case_retrieval_005-correct",
+      "case_id": "case_retrieval_005",
+      "output": "Alto risco usa domingo entre 01h e 03h UTC. Exige SRE e dono do serviço. Rollback testado em staging deve concluir em 20 minutos. [chg-01] [chg-02] [chg-03]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_005-incorrect",
+      "case_id": "case_retrieval_005",
+      "output": "Alto risco usa domingo entre 01h e 03h UTC. Exige SRE e dono do serviço. Rollback testado em staging deve concluir em 120 minutos. [chg-01] [chg-02] [chg-03]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '120 minutos' contradiz a referência '20 minutos'."
+    },
+    {
+      "id": "case_retrieval_advanced_001-correct",
+      "case_id": "case_retrieval_advanced_001",
+      "output": "Em maio o custo unitário subiu 18%. O mix premium caiu de 42% para 27%. Foi definido renegociar até 15 de junho e recuperar o mix para 35%. [nimbus-cost] [nimbus-mix] [nimbus-action]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_advanced_001-incorrect",
+      "case_id": "case_retrieval_advanced_001",
+      "output": "Em maio o custo unitário subiu 8%. O mix premium caiu de 42% para 27%. Foi definido renegociar até 15 de junho e recuperar o mix para 35%. [nimbus-cost] [nimbus-mix] [nimbus-action]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '8%' contradiz a referência '18%'."
+    },
+    {
+      "id": "case_retrieval_007-correct",
+      "case_id": "case_retrieval_007",
+      "output": "Novo país e dispositivo em 15 minutos elevam risco a alto. Pix acima de R$ 10 mil em risco alto deve ser bloqueado e analisado manualmente. Registrar IP, device fingerprint, geolocalização e transação. [fraud-01] [fraud-02] [fraud-03]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_007-incorrect",
+      "case_id": "case_retrieval_007",
+      "output": "Novo país e dispositivo em 15 minutos elevam risco a alto. Pix acima de R$ 10 mil em risco alto deve ser aprovado automaticamente. Registrar IP, device fingerprint, geolocalização e transação. [fraud-01] [fraud-02] [fraud-03]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação 'deve ser aprovado automaticamente' contradiz a referência 'deve ser bloqueado e analisado manualmente'."
+    },
+    {
+      "id": "case_retrieval_008-correct",
+      "case_id": "case_retrieval_008",
+      "output": "Bloquear estoque e interromper distribuição. Rastrear lote, clientes e comprovantes. Notificar autoridade em 24 horas e iniciar recall. Verificar efetividade em 10 dias. [qa-01] [qa-02] [qa-03] [qa-04]",
+      "tool_calls": [],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_retrieval_008-incorrect",
+      "case_id": "case_retrieval_008",
+      "output": "Bloquear estoque e interromper distribuição. Rastrear lote, clientes e comprovantes. Notificar autoridade em 72 horas e iniciar recall. Verificar efetividade em 10 dias. [qa-01] [qa-02] [qa-03] [qa-04]",
+      "tool_calls": [],
+      "expected_passed": false,
+      "label_reason": "A afirmação '72 horas' contradiz a referência '24 horas'."
+    },
+    {
+      "id": "case_tool_001-correct",
+      "case_id": "case_tool_001",
+      "output": "{\"name\": \"get_customer\", \"arguments\": {\"customer_id\": \"C-1042\"}}",
+      "tool_calls": [
+        {
+          "name": "get_customer",
+          "arguments": {
+            "customer_id": "C-1042"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_001-incorrect",
+      "case_id": "case_tool_001",
+      "output": "{\"name\": \"get_customer\", \"arguments\": {\"customer_id\": \"VALOR_INCORRETO\"}}",
+      "tool_calls": [
+        {
+          "name": "get_customer",
+          "arguments": {
+            "customer_id": "VALOR_INCORRETO"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório customer_id difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_002-correct",
+      "case_id": "case_tool_002",
+      "output": "{\"name\": \"get_invoice\", \"arguments\": {\"invoice_id\": \"INV-7781\"}}",
+      "tool_calls": [
+        {
+          "name": "get_invoice",
+          "arguments": {
+            "invoice_id": "INV-7781"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_002-incorrect",
+      "case_id": "case_tool_002",
+      "output": "{\"name\": \"get_invoice\", \"arguments\": {\"invoice_id\": \"VALOR_INCORRETO\"}}",
+      "tool_calls": [
+        {
+          "name": "get_invoice",
+          "arguments": {
+            "invoice_id": "VALOR_INCORRETO"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório invoice_id difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_003-correct",
+      "case_id": "case_tool_003",
+      "output": "{\"name\": \"create_incident\", \"arguments\": {\"severity\": \"P2\", \"service\": \"checkout\", \"summary\": \"timeout intermitente\"}}",
+      "tool_calls": [
+        {
+          "name": "create_incident",
+          "arguments": {
+            "severity": "P2",
+            "service": "checkout",
+            "summary": "timeout intermitente"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_003-incorrect",
+      "case_id": "case_tool_003",
+      "output": "{\"name\": \"create_incident\", \"arguments\": {\"severity\": \"VALOR_INCORRETO\", \"service\": \"checkout\", \"summary\": \"timeout intermitente\"}}",
+      "tool_calls": [
+        {
+          "name": "create_incident",
+          "arguments": {
+            "severity": "VALOR_INCORRETO",
+            "service": "checkout",
+            "summary": "timeout intermitente"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório severity difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_004-correct",
+      "case_id": "case_tool_004",
+      "output": "{\"name\": \"schedule_pickup\", \"arguments\": {\"order_id\": \"ORD-902\", \"date\": \"2026-09-12\", \"window\": \"morning\"}}",
+      "tool_calls": [
+        {
+          "name": "schedule_pickup",
+          "arguments": {
+            "order_id": "ORD-902",
+            "date": "2026-09-12",
+            "window": "morning"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_004-incorrect",
+      "case_id": "case_tool_004",
+      "output": "{\"name\": \"schedule_pickup\", \"arguments\": {\"order_id\": \"VALOR_INCORRETO\", \"date\": \"2026-09-12\", \"window\": \"morning\"}}",
+      "tool_calls": [
+        {
+          "name": "schedule_pickup",
+          "arguments": {
+            "order_id": "VALOR_INCORRETO",
+            "date": "2026-09-12",
+            "window": "morning"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório order_id difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_005-correct",
+      "case_id": "case_tool_005",
+      "output": "{\"name\": \"block_card\", \"arguments\": {\"card_id\": \"card_445\", \"reason\": \"suspected_fraud\"}}",
+      "tool_calls": [
+        {
+          "name": "block_card",
+          "arguments": {
+            "card_id": "card_445",
+            "reason": "suspected_fraud"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_005-incorrect",
+      "case_id": "case_tool_005",
+      "output": "{\"name\": \"block_card\", \"arguments\": {\"card_id\": \"VALOR_INCORRETO\", \"reason\": \"suspected_fraud\"}}",
+      "tool_calls": [
+        {
+          "name": "block_card",
+          "arguments": {
+            "card_id": "VALOR_INCORRETO",
+            "reason": "suspected_fraud"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório card_id difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_006-correct",
+      "case_id": "case_tool_006",
+      "output": "{\"name\": \"grant_temporary_access\", \"arguments\": {\"user\": \"ana.silva\", \"scope\": \"atlas\", \"role\": \"read_only\", \"expires_at\": \"2026-09-10T18:00:00Z\"}}",
+      "tool_calls": [
+        {
+          "name": "grant_temporary_access",
+          "arguments": {
+            "user": "ana.silva",
+            "scope": "atlas",
+            "role": "read_only",
+            "expires_at": "2026-09-10T18:00:00Z"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_006-incorrect",
+      "case_id": "case_tool_006",
+      "output": "{\"name\": \"grant_temporary_access\", \"arguments\": {\"user\": \"VALOR_INCORRETO\", \"scope\": \"atlas\", \"role\": \"read_only\", \"expires_at\": \"2026-09-10T18:00:00Z\"}}",
+      "tool_calls": [
+        {
+          "name": "grant_temporary_access",
+          "arguments": {
+            "user": "VALOR_INCORRETO",
+            "scope": "atlas",
+            "role": "read_only",
+            "expires_at": "2026-09-10T18:00:00Z"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório user difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_007-correct",
+      "case_id": "case_tool_007",
+      "output": "{\"name\": \"propose_credit_limit\", \"arguments\": {\"account_id\": \"AC-88\", \"amount_brl\": 75000, \"approval_ticket\": \"RISK-219\"}}",
+      "tool_calls": [
+        {
+          "name": "propose_credit_limit",
+          "arguments": {
+            "account_id": "AC-88",
+            "amount_brl": 75000,
+            "approval_ticket": "RISK-219"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_007-incorrect",
+      "case_id": "case_tool_007",
+      "output": "{\"name\": \"propose_credit_limit\", \"arguments\": {\"account_id\": \"VALOR_INCORRETO\", \"amount_brl\": 75000, \"approval_ticket\": \"RISK-219\"}}",
+      "tool_calls": [
+        {
+          "name": "propose_credit_limit",
+          "arguments": {
+            "account_id": "VALOR_INCORRETO",
+            "amount_brl": 75000,
+            "approval_ticket": "RISK-219"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório account_id difere do contrato de referência."
+    },
+    {
+      "id": "case_tool_008-correct",
+      "case_id": "case_tool_008",
+      "output": "{\"name\": \"rollback_release\", \"arguments\": {\"release_id\": \"rel-2026.09.09\", \"service\": \"billing\", \"target_version\": \"4.18.2\", \"incident_id\": \"INC-551\"}}",
+      "tool_calls": [
+        {
+          "name": "rollback_release",
+          "arguments": {
+            "release_id": "rel-2026.09.09",
+            "service": "billing",
+            "target_version": "4.18.2",
+            "incident_id": "INC-551"
+          }
+        }
+      ],
+      "expected_passed": true,
+      "label_reason": "Atende todos os requisitos obrigatórios do caso e preserva as referências exigidas."
+    },
+    {
+      "id": "case_tool_008-incorrect",
+      "case_id": "case_tool_008",
+      "output": "{\"name\": \"rollback_release\", \"arguments\": {\"release_id\": \"VALOR_INCORRETO\", \"service\": \"billing\", \"target_version\": \"4.18.2\", \"incident_id\": \"INC-551\"}}",
+      "tool_calls": [
+        {
+          "name": "rollback_release",
+          "arguments": {
+            "release_id": "VALOR_INCORRETO",
+            "service": "billing",
+            "target_version": "4.18.2",
+            "incident_id": "INC-551"
+          }
+        }
+      ],
+      "expected_passed": false,
+      "label_reason": "O argumento obrigatório release_id difere do contrato de referência."
+    }
+  ]
+}

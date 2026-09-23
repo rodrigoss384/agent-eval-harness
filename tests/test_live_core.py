@@ -40,7 +40,7 @@ def test_cost_estimate_exposes_formula_and_catalog_version() -> None:
 
     assert estimate.status == "estimated"
     assert estimate.usd == 0.0012
-    assert estimate.catalog_version == "2026-09-09"
+    assert estimate.catalog_version == "2026-09-23"
     assert "1000" in estimate.formula
     assert estimate.source_url.startswith("https://")
 

@@ -2,6 +2,7 @@
 
 import math
 
+from src.eval.benchmark_stats import method_metrics, paired_metrics
 from src.models import EvaluationMethod, EvaluationSession, SessionSummary
 
 
@@ -44,4 +45,6 @@ def summarize_session(session: EvaluationSession) -> SessionSummary:
         known_cost_usd=sum(known_costs),
         runs_without_cost=len(session.runs) - len(known_costs),
         judge_scores=scores,
+        methods=method_metrics([e for run in session.runs for e in run.evaluations]),
+        comparison=paired_metrics([run.evaluations for run in session.runs]),
     )

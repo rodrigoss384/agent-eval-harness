@@ -1,10 +1,11 @@
 """Factory única e segura para os providers OpenAI-compatible."""
 
 import asyncio
+import math
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from time import perf_counter
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.messages import HumanMessage
 from langchain_core.messages.ai import UsageMetadata
@@ -50,6 +51,10 @@ class RoleResponse:
     time_to_first_token_ms: int | None = None
     finish_reason: str | None = None
     tool_calls: tuple[ToolCall, ...] = ()
+    queue_ms: int = 0
+    cached_input_tokens: int | None = None
+    cost_usd: float | None = None
+    request_id: str | None = None
 
 
 _semaphores: dict[int, asyncio.Semaphore] = {}
@@ -111,8 +116,9 @@ async def invoke_role(settings: Settings, role: ProviderRole, prompt: str) -> Ro
     """Executa uma chamada limitada pelo semáforo e captura usage disponível."""
     resolved = resolve_role(settings, role)
     model = create_chat_model(settings, role)
-    started_at = perf_counter()
+    queued_at = perf_counter()
     async with _semaphore(settings.llm_max_concurrency):
+        started_at = perf_counter()
         message = await model.ainvoke([HumanMessage(content=prompt)])
     latency_ms = round((perf_counter() - started_at) * 1000)
     usage = message.usage_metadata
@@ -120,12 +126,18 @@ async def invoke_role(settings: Settings, role: ProviderRole, prompt: str) -> Ro
     return RoleResponse(
         text=text,
         provider=resolved.provider,
-        model=resolved.model,
+        model=str(message.response_metadata.get("model_name") or resolved.model),
         latency_ms=latency_ms,
         input_tokens=usage.get("input_tokens") if usage else None,
         output_tokens=usage.get("output_tokens") if usage else None,
         total_tokens=usage.get("total_tokens") if usage else None,
         finish_reason=str(message.response_metadata.get("finish_reason") or "") or None,
+        queue_ms=round((started_at - queued_at) * 1000),
+        cached_input_tokens=(
+            usage.get("input_token_details", {}).get("cache_read") if usage else None
+        ),
+        cost_usd=reported_cost(message.response_metadata),
+        request_id=str(message.response_metadata.get("id") or message.id or "") or None,
     )
 
 
@@ -138,12 +150,14 @@ async def stream_role(
     """Transmite texto incremental e devolve a medição consolidada do provider."""
     resolved = resolve_role(settings, role)
     model = create_chat_model(settings, role)
-    started_at = perf_counter()
+    queued_at = perf_counter()
     first_token_ms: int | None = None
     parts: list[str] = []
     usage: UsageMetadata | None = None
     finish_reason: str | None = None
+    response_metadata: dict[str, Any] = {}
     async with _semaphore(settings.llm_max_concurrency):
+        started_at = perf_counter()
         async for chunk in model.astream([HumanMessage(content=prompt)]):
             text = chunk.text if isinstance(chunk.text, str) else ""
             if text:
@@ -153,6 +167,7 @@ async def stream_role(
                 await on_token(text)
             if chunk.usage_metadata:
                 usage = chunk.usage_metadata
+            response_metadata.update(chunk.response_metadata)
             candidate_finish = chunk.response_metadata.get("finish_reason")
             if candidate_finish:
                 finish_reason = str(candidate_finish)
@@ -160,13 +175,19 @@ async def stream_role(
     return RoleResponse(
         text="".join(parts),
         provider=resolved.provider,
-        model=resolved.model,
+        model=str(response_metadata.get("model_name") or resolved.model),
         latency_ms=latency_ms,
         input_tokens=usage.get("input_tokens") if usage else None,
         output_tokens=usage.get("output_tokens") if usage else None,
         total_tokens=usage.get("total_tokens") if usage else None,
         time_to_first_token_ms=first_token_ms,
         finish_reason=finish_reason,
+        queue_ms=round((started_at - queued_at) * 1000),
+        cached_input_tokens=(
+            usage.get("input_token_details", {}).get("cache_read") if usage else None
+        ),
+        cost_usd=reported_cost(response_metadata),
+        request_id=str(response_metadata.get("id") or "") or None,
     )
 
 
@@ -185,8 +206,9 @@ async def invoke_role_with_tool(
         ],
         tool_choice=tool.name,
     )
-    started_at = perf_counter()
+    queued_at = perf_counter()
     async with _semaphore(settings.llm_max_concurrency):
+        started_at = perf_counter()
         message = await model.ainvoke([HumanMessage(content=prompt)])
     latency_ms = round((perf_counter() - started_at) * 1000)
     usage = message.usage_metadata
@@ -197,11 +219,30 @@ async def invoke_role_with_tool(
     return RoleResponse(
         text=message.text if isinstance(message.text, str) else str(message.content),
         provider=resolved.provider,
-        model=resolved.model,
+        model=str(message.response_metadata.get("model_name") or resolved.model),
         latency_ms=latency_ms,
         input_tokens=usage.get("input_tokens") if usage else None,
         output_tokens=usage.get("output_tokens") if usage else None,
         total_tokens=usage.get("total_tokens") if usage else None,
         finish_reason=str(message.response_metadata.get("finish_reason") or "") or None,
+        queue_ms=round((started_at - queued_at) * 1000),
+        cached_input_tokens=(
+            usage.get("input_token_details", {}).get("cache_read") if usage else None
+        ),
+        cost_usd=reported_cost(message.response_metadata),
+        request_id=str(message.response_metadata.get("id") or message.id or "") or None,
         tool_calls=calls,
     )
+
+
+def reported_cost(metadata: dict[str, Any]) -> float | None:
+    usage = metadata.get("token_usage") or {}
+    value = usage.get("cost") if isinstance(usage, dict) else None
+    if (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value >= 0
+    ):
+        return float(value)
+    return None

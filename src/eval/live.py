@@ -16,15 +16,16 @@ from src.config import Settings
 from src.eval.aggregation import aggregate_trials
 from src.eval.datasets import get_dataset
 from src.eval.deterministic import evaluate_deterministic
-from src.eval.judge import evaluate_with_judge
-from src.eval.pricing import estimate_cost
+from src.eval.dispatch import candidate_output, evaluate_model
 from src.eval.retrieval import retrieve_chunks
+from src.eval.telemetry import combine_metrics, final_verdict, response_metrics
 from src.llm.factory import (
     ProviderConfigurationError,
     invoke_role_with_tool,
     resolve_role,
     stream_role,
 )
+from src.llm.jev import jev_key
 from src.models import (
     CandidateInput,
     DatasetCase,
@@ -32,7 +33,6 @@ from src.models import (
     EvaluationResult,
     EvaluationSession,
     FinalVerdict,
-    RunMetrics,
     RunVerdict,
     SessionAccepted,
     SessionRequest,
@@ -80,6 +80,8 @@ class LiveEvaluationManager:
             resolve_role(self._settings, "agent")
             if EvaluationMethod.LLM_AS_JUDGE in request.methods:
                 resolve_role(self._settings, request.judge_role)
+            if EvaluationMethod.DECISION_MODEL in request.methods:
+                jev_key(self._settings)
         except ProviderConfigurationError as error:
             raise LiveSessionError(str(error)) from error
         now = utc_now()
@@ -95,7 +97,10 @@ class LiveEvaluationManager:
         self._tasks[session.session_id] = asyncio.create_task(
             self._execute(session, cases), name=session.session_id
         )
-        judge_calls = 1 if EvaluationMethod.LLM_AS_JUDGE in request.methods else 0
+        judge_calls = sum(
+            method in request.methods
+            for method in (EvaluationMethod.LLM_AS_JUDGE, EvaluationMethod.DECISION_MODEL)
+        )
         return SessionAccepted(
             session_id=session.session_id,
             events_url=f"/api/eval/sessions/{session.session_id}/events",
@@ -213,7 +218,11 @@ class LiveEvaluationManager:
             else:
                 session.final_verdict = FinalVerdict.INCONCLUSIVE
             session.status = (
-                "completed" if session.final_verdict is not FinalVerdict.INCONCLUSIVE else "partial"
+                "partial"
+                if session.final_verdict is FinalVerdict.INCONCLUSIVE
+                or any(run.run_status == "partial" for run in session.runs)
+                or len(session.runs) < len(cases) * session.request.trials
+                else "completed"
             )
             session.current_case_id = None
             session.current_trial = None
@@ -339,83 +348,43 @@ class LiveEvaluationManager:
                     "expected_ids": sorted(expected),
                 }
             evaluations.append(deterministic)
-        judge_input = judge_output = judge_total = None
-        judge_ms = 0
-        if EvaluationMethod.LLM_AS_JUDGE in session.request.methods:
+        for method in (EvaluationMethod.LLM_AS_JUDGE, EvaluationMethod.DECISION_MODEL):
+            if method not in session.request.methods:
+                continue
             await self._emit(
                 session,
                 "evaluation_started",
-                {"method": "llm_as_judge", "case_id": case.id, "trial": trial},
+                {"method": method, "case_id": case.id, "trial": trial},
             )
-            try:
-                (
-                    judge_result,
-                    judge_input,
-                    judge_output,
-                    judge_total,
-                    judge_ms,
-                ) = await evaluate_with_judge(
-                    self._settings, case, output, session.request.judge_role
+            evaluations.append(
+                await evaluate_model(
+                    self._settings,
+                    case,
+                    candidate_output(candidate),
+                    method,
+                    session.request.judge_role,
+                    session.request.pricing_profiles.get(
+                        "judge",
+                        "free"
+                        if getattr(self._settings, f"eval_{session.request.judge_role}_provider")
+                        == "gemini"
+                        else "standard",
+                    ),
                 )
-                evaluations.append(judge_result)
-            except Exception as error:  # noqa: BLE001
-                evaluations.append(
-                    EvaluationResult(
-                        method=EvaluationMethod.LLM_AS_JUDGE,
-                        status="error",
-                        correctness_definition=case.correctness_definition,
-                        reason=f"{type(error).__name__}: {error}",
-                        rubric=case.rubric,
-                        threshold=case.threshold,
-                    )
-                )
+            )
         agent_resolved = resolve_role(self._settings, "agent")
         judge_resolved = (
             resolve_role(self._settings, session.request.judge_role)
             if EvaluationMethod.LLM_AS_JUDGE in session.request.methods
             else None
         )
-        agent_cost = estimate_cost(
-            model=agent.model,
-            pricing_profile=session.request.pricing_profiles.get("agent", "standard"),
-            input_tokens=agent.input_tokens,
-            output_tokens=agent.output_tokens,
-        )
-        judge_cost = (
-            estimate_cost(
-                model=judge_resolved.model,
-                pricing_profile=session.request.pricing_profiles.get("judge", "free"),
-                input_tokens=judge_input,
-                output_tokens=judge_output,
-            )
-            if judge_resolved
-            else None
-        )
-        costs_known = agent_cost.usd is not None and (
-            judge_cost is None or judge_cost.usd is not None
-        )
         total_ms = round((asyncio.get_running_loop().time() - started) * 1000)
-        metrics = RunMetrics(
-            latency_ms=total_ms,
-            input_tokens=_sum_available(agent.input_tokens, judge_input),
-            output_tokens=_sum_available(agent.output_tokens, judge_output),
-            total_tokens=_sum_available(agent.total_tokens, judge_total),
-            cost_usd=((agent_cost.usd or 0) + ((judge_cost.usd or 0) if judge_cost else 0))
-            if costs_known
-            else None,
-            cost_status="estimated" if costs_known else "unavailable",
-            cost_source="pricing_catalog" if costs_known else "none",
-            time_to_first_token_ms=agent.time_to_first_token_ms,
-            generation_ms=agent.latency_ms,
-            judge_ms=judge_ms or None,
-            total_latency_ms=total_ms,
-            cost_formula=(
-                f"agente: {agent_cost.formula}; juiz: {judge_cost.formula if judge_cost else 'não selecionado'}"
-                if costs_known
-                else None
-            ),
-            pricing_version=agent_cost.catalog_version,
+        metrics = combine_metrics(
+            response_metrics(agent, session.request.pricing_profiles.get("agent", "standard")),
+            evaluations,
+            total_ms,
         )
+        metrics.time_to_first_token_ms = agent.time_to_first_token_ms
         if EvaluationMethod.PROGRAMMATIC_CHECK in session.request.methods:
             limits = case.metric_limits
             checks = {
@@ -447,20 +416,17 @@ class LiveEvaluationManager:
                     },
                 )
             )
-        normative = [item for item in evaluations if item.passed is not None]
-        if any(item.passed is False for item in normative):
-            verdict = FinalVerdict.FAIL
-        elif normative and all(item.passed is True for item in normative):
-            verdict = FinalVerdict.PASS
-        else:
-            verdict = FinalVerdict.INCONCLUSIVE
+        verdict = final_verdict(evaluations)
         run = RunVerdict(
             run_id=f"run_{uuid4().hex[:12]}",
             session_id=session.session_id,
             trial_index=trial,
             case_id=case.id,
             created_at=utc_now(),
-            run_status="completed" if verdict is not FinalVerdict.INCONCLUSIVE else "partial",
+            run_status="partial"
+            if any(e.status in {"error", "unavailable"} for e in evaluations)
+            or verdict is FinalVerdict.INCONCLUSIVE
+            else "completed",
             final_verdict=verdict,
             candidate_origin="live_model",
             agent_input=case.input,

@@ -1,7 +1,17 @@
 import { z } from 'zod'
 
-const evaluationSchema = z.object({
-  method: z.enum(['deterministic_match', 'programmatic_check', 'llm_as_judge']),
+export const evaluationMetricsSchema = z.object({
+  latency_ms: z.number().nullable(), queue_ms: z.number().nullable(),
+  input_tokens: z.number().nullable(), output_tokens: z.number().nullable(), total_tokens: z.number().nullable(),
+  cached_input_tokens: z.number().nullable().optional(), cost_usd: z.number().nullable(),
+  cost_status: z.enum(['reported', 'estimated', 'unavailable']),
+  cost_source: z.enum(['provider_response', 'pricing_catalog', 'mixed', 'none']),
+  cost_formula: z.string().nullable().optional(), pricing_version: z.string().nullable().optional(),
+})
+
+
+export const evaluationSchema = z.object({
+  method: z.enum(['deterministic_match', 'programmatic_check', 'llm_as_judge', 'decision_model']),
   status: z.enum(['passed', 'failed', 'observed', 'unavailable', 'error']),
   correctness_definition: z.string(),
   passed: z.boolean().nullable().optional(),
@@ -13,6 +23,11 @@ const evaluationSchema = z.object({
   rubric: z.array(z.string()).optional(),
   score: z.number().nullable().optional(),
   threshold: z.number().nullable().optional(),
+  metrics: evaluationMetricsSchema.nullable().optional(),
+  judge_provider: z.string().nullable().optional(), upstream_provider: z.string().nullable().optional(),
+  request_id: z.string().nullable().optional(), score_type: z.enum(['probability', 'rating']).nullable().optional(),
+  rationale_available: z.boolean().nullable().optional(), protocol_version: z.string().nullable().optional(),
+  evaluated_state: z.string().nullable().optional(),
 })
 
 export const runVerdictSchema = z.object({
@@ -35,13 +50,14 @@ export const runVerdictSchema = z.object({
     total_tokens: z.number().nullable(),
     cost_usd: z.number().nullable(),
     cost_status: z.enum(['reported', 'estimated', 'unavailable']),
-    cost_source: z.enum(['provider_response', 'pricing_catalog', 'none']),
+    cost_source: z.enum(['provider_response', 'pricing_catalog', 'mixed', 'none']),
     time_to_first_token_ms: z.number().nullable().optional(),
     generation_ms: z.number().nullable().optional(),
     judge_ms: z.number().nullable().optional(),
     total_latency_ms: z.number().nullable().optional(),
     cost_formula: z.string().nullable().optional(),
     pricing_version: z.string().nullable().optional(),
+    agent_metrics: evaluationMetricsSchema.nullable().optional(),
   }),
   session_id: z.string().nullable().optional(),
   trial_index: z.number().nullable().optional(),
@@ -90,7 +106,7 @@ export const evaluationSessionSchema = z.object({
     mode: z.enum(['single', 'suite']),
     dataset_id: z.string(),
     case_ids: z.array(z.string()),
-    methods: z.array(z.enum(['deterministic_match', 'programmatic_check', 'llm_as_judge'])),
+    methods: z.array(z.enum(['deterministic_match', 'programmatic_check', 'llm_as_judge', 'decision_model'])),
     judge_role: z.enum(['judge', 'judge_alt']),
     pricing_profiles: z.record(z.string(), z.string()),
     concurrency: z.number(),
@@ -147,6 +163,12 @@ export const sessionSummarySchema = z.object({
   latency_p50_ms: z.number().nullable(), latency_p95_ms: z.number().nullable(),
   total_tokens: z.number(), known_cost_usd: z.number(), runs_without_cost: z.number(),
   judge_scores: z.array(z.number()),
+  methods: z.record(z.string(), z.object({ calls: z.number(), valid: z.number(), errors: z.number(),
+    latency_p50_ms: z.number().nullable(), latency_p95_ms: z.number().nullable(),
+    known_cost_usd: z.number(), calls_without_cost: z.number(),
+    reported_cost_usd: z.number(), estimated_cost_usd: z.number() })).optional(),
+  comparison: z.object({ paired_trials: z.number(), agreements: z.number(), disagreements: z.number(),
+    agreement_rate: z.number().nullable(), unpaired_trials: z.number() }).optional(),
 })
 export type SessionSummary = z.infer<typeof sessionSummarySchema>
 
