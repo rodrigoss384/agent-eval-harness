@@ -363,7 +363,13 @@ class LiveEvaluationManager:
                     candidate_output(candidate),
                     method,
                     session.request.judge_role,
-                    session.request.pricing_profiles.get("judge", "standard"),
+                    session.request.pricing_profiles.get(
+                        "judge",
+                        "free"
+                        if getattr(self._settings, f"eval_{session.request.judge_role}_provider")
+                        == "gemini"
+                        else "standard",
+                    ),
                 )
             )
         agent_resolved = resolve_role(self._settings, "agent")
