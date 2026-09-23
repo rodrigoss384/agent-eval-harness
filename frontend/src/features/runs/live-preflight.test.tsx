@@ -21,8 +21,9 @@ describe('LivePreflight', () => {
 
     expect(screen.getByText('1 caso(s) × 3 tentativas')).toBeInTheDocument()
     expect(screen.getByText('6 chamadas reais')).toBeInTheDocument()
-    expect(screen.getByText(/Agente OpenAI.*juiz Gemini/i)).toBeInTheDocument()
+    expect(screen.getByText(/Agente.*Juiz LLM/i)).toBeInTheDocument()
 
+    await user.selectOptions(screen.getByLabelText('Juiz LLM'), 'judge_alt')
     await user.click(screen.getByText('Opções avançadas'))
     await user.selectOptions(screen.getByLabelText('Perfil de preço do juiz Gemini'), 'paid_standard')
     await user.click(screen.getByRole('button', { name: /revisar execução/i }))

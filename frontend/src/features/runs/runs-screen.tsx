@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, FlaskConical, LoaderCircle, Play, RefreshC
 import { useEffect, useState } from 'react'
 
 import { cancelSession, createLiveSession, createOfflineRun, getDataset, getSession, getSessionSummary, importDataset, listDatasets, listModels, listRuns, listSessions, watchSession } from './api'
+import { getPreflight } from '../comparison/contracts'
 import { LivePreflight } from './live-preflight'
 import { LiveSessionPanel } from './live-session-panel'
 import { RunDetail } from './run-detail'
@@ -29,6 +30,7 @@ export function RunsScreen({ selectedRunId, selectedSessionId, selectedDatasetId
   const runsQuery = useQuery({ queryKey: ['runs'], queryFn: listRuns, refetchInterval: 30_000 })
   const sessionsQuery = useQuery({ queryKey: ['sessions'], queryFn: listSessions, refetchInterval: 15_000 })
   const datasetsQuery = useQuery({ queryKey: ['datasets'], queryFn: listDatasets })
+  const comparisonPreflight = useQuery({ queryKey: ['comparison-preflight'], queryFn: getPreflight })
   const modelsQuery = useQuery({ queryKey: ['models'], queryFn: listModels, staleTime: 30_000 })
   const datasetId = selectedDatasetId ?? datasetsQuery.data?.[0]?.dataset_id ?? 'builtin-v2'
   const datasetQuery = useQuery({ queryKey: ['dataset', datasetId], queryFn: () => getDataset(datasetId) })
@@ -143,7 +145,7 @@ export function RunsScreen({ selectedRunId, selectedSessionId, selectedDatasetId
       ) : (
         <>
           <div className="grid items-start gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
-            <LivePreflight pending={createLive.isPending} datasets={datasetsQuery.data ?? []} cases={datasetQuery.data?.cases ?? []} datasetId={datasetId} onDataset={onDataset} onStart={(input) => createLive.mutate(input)} onImport={(file) => importMutation.mutate(file)} importing={importMutation.isPending} providerReady={missingProviders.length === 0} missingProviders={missingProviders} />
+            <LivePreflight models={modelsQuery.data} jevReady={comparisonPreflight.data?.jev_ready} pending={createLive.isPending} datasets={datasetsQuery.data ?? []} cases={datasetQuery.data?.cases ?? []} datasetId={datasetId} onDataset={onDataset} onStart={(input) => createLive.mutate(input)} onImport={(file) => importMutation.mutate(file)} importing={importMutation.isPending} providerReady={missingProviders.length === 0} missingProviders={missingProviders} />
             <LiveSessionPanel session={liveSession} summary={summaryQuery.data ?? null} streamedOutput={streamedOutput} events={events} reconnecting={reconnecting} onCancel={(id) => cancelMutation.mutate(id)} cancelling={cancelMutation.isPending} />
           </div>
           <section className="mt-8" aria-labelledby="session-history-title"><h2 id="session-history-title" className="mb-3 text-sm font-semibold">Histórico de execuções com IA</h2><div className="max-w-2xl"><SessionList sessions={sessionsQuery.data ?? []} selectedSessionId={effectiveSessionId} onSelect={onSession} /></div></section>

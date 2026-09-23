@@ -7,7 +7,8 @@ import { StatusPill } from './status-pill'
 const methodLabels = {
   deterministic_match: 'Validação Exata (Match Determinístico)',
   programmatic_check: 'Validação por Regra (Check Programático)',
-  llm_as_judge: 'Avaliação da IA Juíza',
+  llm_as_judge: 'LLM como juiz',
+  decision_model: 'Jev · modelo de decisão',
 }
 
 const evaluationLabels = {
@@ -166,7 +167,7 @@ export function RunDetail({ verdict }: { verdict: RunVerdict }) {
                   </div>
                   {evaluation.score !== null && evaluation.score !== undefined ? (
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div><dt className="text-xs text-muted">Pontuação Obtida (Score)</dt><dd className="mt-1 font-mono text-sm text-primary">{evaluation.score.toFixed(2)}</dd></div>
+                      <div><dt className="text-xs text-muted">{evaluation.score_type === 'probability' ? 'Probabilidade de atender ao critério' : 'Nota de atendimento à rubrica'}</dt><dd className="mt-1 font-mono text-sm text-primary">{evaluation.score.toPrecision(6)}</dd></div>
                       <div><dt className="text-xs text-muted">Nota Mínima (Threshold)</dt><dd className="mt-1 font-mono text-sm text-primary">{evaluation.threshold?.toFixed(2)}</dd></div>
                     </div>
                   ) : null}
@@ -174,9 +175,16 @@ export function RunDetail({ verdict }: { verdict: RunVerdict }) {
                     <div><dt className="text-xs font-medium uppercase tracking-[0.1em] text-muted">Rubrica de Avaliação</dt><dd><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-secondary">{evaluation.rubric.map((criterion) => <li key={criterion}>{criterion}</li>)}</ul></dd></div>
                   ) : null}
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-[0.1em] text-muted">Justificativa Completa</dt>
+                    <dt className="text-xs font-medium uppercase tracking-[0.1em] text-muted">{evaluation.rationale_available === false ? "Decisão sem racional textual" : "Justificativa Completa"}</dt>
                     <dd className="mt-1.5 leading-6 text-secondary">{evaluation.reason}</dd>
                   </div>
+                  <div><dt className="text-xs text-muted">Modelo e provider</dt><dd className="mt-1 break-all">{evaluation.judge_model ?? 'Não se aplica'} · {evaluation.judge_provider ?? 'Não registrado'}</dd></div>
+                  {evaluation.metrics ? <div className="grid gap-3 sm:grid-cols-3">
+                    <div>Tempo: {evaluation.metrics.latency_ms ?? '—'} ms</div>
+                    <div>Tokens: {evaluation.metrics.total_tokens ?? 'Não informados'}</div>
+                    <div>Custo: {evaluation.metrics.cost_usd == null ? 'Não informado' : `US$ ${evaluation.metrics.cost_usd.toFixed(8)} (${evaluation.metrics.cost_status === 'reported' ? 'informado' : 'estimado'})`}</div>
+                  </div> : <p className="text-xs text-muted">Métricas individuais não registradas nesta versão.</p>}
+                  {Object.keys(evaluation.evidence).length > 0 ? <details><summary className="cursor-pointer">Evidências completas</summary><pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words text-xs">{JSON.stringify(evaluation.evidence, null, 2)}</pre></details> : null}
                   {evaluation.expected !== null && evaluation.expected !== undefined ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>

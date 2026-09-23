@@ -31,7 +31,7 @@ function LiveMetric({ label, value, icon: Icon }: { label: string; value: string
 }
 
 const sessionLabels: Record<EvaluationSession['status'], string> = {
-  queued: 'Na fila', running: 'Em andamento', completed: 'Concluída', partial: 'Inconclusiva', failed: 'Erro de execução', cancelled: 'Cancelada', interrupted: 'Interrompida',
+  queued: 'Na fila', running: 'Em andamento', completed: 'Concluída', partial: 'Parcial', failed: 'Erro de execução', cancelled: 'Cancelada', interrupted: 'Interrompida',
 }
 
 const caseLabels: Record<string, string> = {
@@ -118,7 +118,7 @@ export function LiveSessionPanel({
         <div className="grid gap-2 border-t border-border p-4 sm:grid-cols-3">
           <LiveMetric label="TTFT" value={metrics?.time_to_first_token_ms ? `${metrics.time_to_first_token_ms} ms` : 'Aguardando'} icon={Clock3} />
           <LiveMetric label="Tokens" value={metrics?.total_tokens ? String(metrics.total_tokens) : 'Aguardando'} icon={Hash} />
-          <LiveMetric label="Custo estimado" value={metrics?.cost_usd !== null && metrics?.cost_usd !== undefined ? `US$ ${metrics.cost_usd.toFixed(6)}` : 'Aguardando'} icon={Coins} />
+          <LiveMetric label={metrics?.cost_status === 'reported' ? 'Custo informado' : 'Custo estimado'} value={metrics?.cost_usd !== null && metrics?.cost_usd !== undefined ? `US$ ${metrics.cost_usd.toFixed(6)}` : 'Aguardando'} icon={Coins} />
         </div>
       </div>
 
@@ -137,6 +137,7 @@ export function LiveSessionPanel({
           </div>
         </div>
       ) : null}
+      {summary?.comparison && summary.comparison.paired_trials > 0 && <section className="rounded-xl border border-border bg-panel p-5"><h2 className="font-semibold">Comparação dos juízes nesta sessão</h2><p className="mt-2 text-sm text-secondary">{summary.comparison.agreements} concordâncias e {summary.comparison.disagreements} divergências em {summary.comparison.paired_trials} pares válidos. {summary.comparison.unpaired_trials} tentativas sem o par completo. Concordância não prova acerto.</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{Object.entries(summary.methods ?? {}).filter(([m]) => ['llm_as_judge', 'decision_model'].includes(m)).map(([method, m]) => <div key={method} className="rounded-lg bg-canvas p-4 text-sm"><h3 className="font-semibold">{method === 'decision_model' ? 'Jev' : 'LLM como juiz'}</h3><p className="mt-2">{m.valid}/{m.calls} julgamentos válidos · {m.errors} erros</p><p className="mt-1">Mediana / p95: {m.latency_p50_ms ?? '—'} / {m.latency_p95_ms ?? '—'} ms</p><p className="mt-1">Informado: US$ {m.reported_cost_usd.toFixed(8)}</p><p>Estimado: US$ {m.estimated_cost_usd.toFixed(8)}</p><p className="mt-1 text-xs text-muted">{m.calls_without_cost} chamadas sem custo conhecido</p></div>)}</div></section>}
       {summary ? <section className="rounded-xl border border-border bg-panel p-5" aria-labelledby="summary-title"><h2 id="summary-title" className="text-sm font-semibold">Resumo da sessão</h2><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4"><LiveMetric label="Casos aprovados com estabilidade" value={`${summary.stable_passes}/${summary.total_cases}`} icon={Activity} /><LiveMetric label="Latência mediana / p95" value={`${summary.latency_p50_ms ?? '—'} / ${summary.latency_p95_ms ?? '—'} ms`} icon={Clock3} /><LiveMetric label="Tokens totais" value={String(summary.total_tokens)} icon={Hash} /><LiveMetric label="Custo conhecido" value={`US$ ${summary.known_cost_usd.toFixed(6)}`} icon={Coins} /></div>{summary.runs_without_cost ? <p className="mt-3 text-xs text-warning">{summary.runs_without_cost} tentativa(s) sem preço disponível; o total não é uma estimativa completa.</p> : null}</section> : null}
     </section>
   )

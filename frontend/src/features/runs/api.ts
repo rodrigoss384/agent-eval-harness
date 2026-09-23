@@ -53,6 +53,8 @@ export interface LiveSessionInput {
   mode: 'single' | 'suite'
   concurrency: number
   geminiPricingProfile: 'free' | 'paid_standard'
+  judgeRole?: 'judge' | 'judge_alt'
+  includeJev?: boolean
 }
 
 export async function createLiveSession(input: LiveSessionInput) {
@@ -63,9 +65,9 @@ export async function createLiveSession(input: LiveSessionInput) {
       mode: input.mode,
       dataset_id: input.datasetId,
       case_ids: input.caseIds,
-      methods: ['deterministic_match', 'llm_as_judge', 'programmatic_check'],
-      judge_role: 'judge_alt',
-      pricing_profiles: { agent: 'standard', judge: input.geminiPricingProfile },
+      methods: ['deterministic_match', 'llm_as_judge', 'programmatic_check', ...(input.includeJev ? ['decision_model'] : [])],
+      judge_role: input.judgeRole ?? 'judge_alt',
+      pricing_profiles: { agent: 'standard', judge: input.judgeRole === 'judge' ? 'standard' : input.geminiPricingProfile },
       concurrency: input.concurrency,
       trials: 3,
     }),

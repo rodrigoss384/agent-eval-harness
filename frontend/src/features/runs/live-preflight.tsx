@@ -2,7 +2,7 @@ import { Activity, ArrowRight, CheckCircle2, ChevronDown, Coins, FileUp, Layers3
 import { ChangeEvent, useMemo, useState } from 'react'
 
 import type { LiveSessionInput } from './api'
-import type { DatasetCase, DatasetMetadata } from './schemas'
+import type { DatasetCase, DatasetMetadata, ModelRole } from './schemas'
 
 interface Props {
   pending: boolean
@@ -13,6 +13,8 @@ interface Props {
   onStart: (input: LiveSessionInput) => void
   onImport: (file: File) => void
   importing: boolean
+  models?: ModelRole[]
+  jevReady?: boolean
   providerReady?: boolean
   missingProviders?: string[]
 }
@@ -26,7 +28,13 @@ export function LivePreflight(props: Props) {
   const [caseId, setCaseId] = useState('case_retrieval_advanced_001')
   const [concurrency, setConcurrency] = useState(2)
   const [reviewing, setReviewing] = useState(false)
-  const providerReady = props.providerReady ?? true
+  const [judgeRole, setJudgeRole] = useState<'judge' | 'judge_alt'>('judge')
+  const [includeJev, setIncludeJev] = useState(false)
+  const required = ['agent', judgeRole]
+  const missing = props.models ? required.filter(role => !props.models?.some(m => m.role === role && m.configured)) : []
+  const providerReady = props.models ? missing.length === 0 && (!includeJev || Boolean(props.jevReady)) : props.providerReady ?? true
+  const model = props.models?.find(m => m.role === judgeRole)
+  const agent = props.models?.find(m => m.role === 'agent')
   const domains = useMemo(() => [...new Set(props.cases.map((item) => item.domain))].sort(), [props.cases])
   const filtered = props.cases.filter((item) =>
     (category === 'all' || item.category === category)
@@ -34,7 +42,7 @@ export function LivePreflight(props: Props) {
     && (domain === 'all' || item.domain === domain))
   const selected = mode === 'suite' ? filtered.map((item) => item.id) : [filtered.some((item) => item.id === caseId) ? caseId : filtered[0]?.id].filter(Boolean) as string[]
   const selectedCase = props.cases.find((item) => item.id === selected[0])
-  const calls = selected.length * 3 * 2
+  const calls = selected.length * 3 * (includeJev ? 3 : 2)
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -43,7 +51,7 @@ export function LivePreflight(props: Props) {
   }
 
   function start() {
-    props.onStart({ datasetId: props.datasetId, caseIds: selected, mode, concurrency, geminiPricingProfile: profile })
+    props.onStart({ datasetId: props.datasetId, caseIds: selected, mode, concurrency, geminiPricingProfile: profile, judgeRole, includeJev })
     setReviewing(false)
   }
 
@@ -61,6 +69,8 @@ export function LivePreflight(props: Props) {
       {mode === 'single' ? <label className="mt-4 block text-xs font-medium text-secondary">Exemplo a avaliar<select value={selected[0] ?? ''} onChange={(event) => { setCaseId(event.target.value); setReviewing(false) }} className="mt-2 w-full rounded-md border border-border bg-canvas px-3 py-2.5 text-sm">{filtered.map((item) => <option key={item.id} value={item.id}>{item.input}</option>)}</select></label> : null}
       {selectedCase && mode === 'single' ? <div className="mt-3 rounded-lg border border-border bg-canvas p-3"><p className="text-xs text-muted">Como este caso será avaliado</p><p className="mt-1 text-sm leading-6 text-secondary">{selectedCase.correctness_definition}</p></div> : null}
 
+      <label className="mt-4 block text-sm font-medium">Juiz LLM<select value={judgeRole} onChange={e => { setJudgeRole(e.target.value as 'judge' | 'judge_alt'); setReviewing(false) }} className="mt-2 w-full rounded-md border border-border bg-canvas p-3 text-sm"><option value="judge">Principal · OpenAI</option><option value="judge_alt">Alternativo · Gemini</option></select></label>
+      <label className="mt-4 flex items-start gap-2 text-sm"><input type="checkbox" checked={includeJev} onChange={e => { setIncludeJev(e.target.checked); setReviewing(false) }} className="mt-1 size-4 accent-accent" /><span>Comparar também com Jev via OpenRouter<span className="mt-1 block text-xs leading-5 text-muted">Mesma resposta, probabilidade sem racional textual. Adiciona uma chamada por tentativa.</span></span></label>
       <details className="group mt-4 rounded-lg border border-border bg-canvas">
         <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium text-secondary"><span>Opções avançadas</span><ChevronDown aria-hidden="true" className="size-4 transition-transform group-open:rotate-180" /></summary>
         <div className="border-t border-border p-4">
@@ -78,11 +88,11 @@ export function LivePreflight(props: Props) {
 
       <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
         <Metric icon={Layers3} label="Escopo" value={`${selected.length} caso(s) × 3 tentativas`} />
-        <Metric icon={ArrowRight} label="Fluxo" value="Agente OpenAI → juiz Gemini" />
+        <Metric icon={ArrowRight} label="Fluxo" value={`${agent?.model ?? 'Agente'} → ${model?.model ?? 'Juiz LLM'}${includeJev ? ' + Jev' : ''}`} />
         <Metric icon={Coins} label="Chamadas externas" value={`${calls} chamadas reais`} />
       </div>
 
-      {!providerReady ? <div className="mt-4 rounded-lg border border-warning/30 bg-warning/8 p-3 text-sm text-warning"><span className="flex items-center gap-2 font-semibold"><ShieldAlert aria-hidden="true" className="size-4" />Execução real indisponível</span><p className="mt-1 leading-6">Configure {props.missingProviders?.join(' e ') || 'os providers necessários'} no arquivo <code>.env</code> e reinicie o serviço. A demonstração local continua disponível.</p></div> : null}
+      {!providerReady ? <div className="mt-4 rounded-lg border border-warning/30 bg-warning/8 p-3 text-sm text-warning"><span className="flex items-center gap-2 font-semibold"><ShieldAlert aria-hidden="true" className="size-4" />Execução real indisponível</span><p className="mt-1 leading-6">Configure {props.models ? [...missing, ...(includeJev && !props.jevReady ? ['JEV_API_KEY ou OPENROUTER_API_KEY'] : [])].join(' e ') : props.missingProviders?.join(' e ') || 'os providers necessários'} no arquivo <code>.env</code> e reinicie o serviço. A demonstração local continua disponível.</p></div> : null}
 
       {!reviewing ? <button type="button" disabled={props.pending || selected.length === 0 || !providerReady} onClick={() => setReviewing(true)} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"><Activity aria-hidden="true" className="size-4" />Revisar execução</button> : (
         <div className="mt-4 rounded-lg border border-accent/30 bg-accent/8 p-4" role="group" aria-label="Confirmação da execução real">
