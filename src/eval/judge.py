@@ -6,8 +6,10 @@ import re
 from pydantic import BaseModel, Field, ValidationError
 
 from src.config import Settings
+from src.eval.context import PROTOCOL_VERSION, evaluation_state, judge_prompt
+from src.eval.telemetry import response_metrics
 from src.llm.factory import ProviderRole, invoke_role
-from src.models import DatasetCase, EvaluationMethod, EvaluationResult
+from src.models import DatasetCase, EvaluationMethod, EvaluationMetrics, EvaluationResult
 
 
 class JudgeDecision(BaseModel):
@@ -22,6 +24,10 @@ class JudgeDecision(BaseModel):
 class JudgeParseError(ValueError):
     """Preserva como erro uma resposta que não cumpre o contrato."""
 
+    def __init__(self, message: str, metrics: EvaluationMetrics | None = None):
+        super().__init__(message)
+        self.metrics = metrics
+
 
 def _json_object(text: str) -> str:
     fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", text, re.DOTALL)
@@ -32,34 +38,21 @@ def _json_object(text: str) -> str:
 
 
 async def evaluate_with_judge(
-    settings: Settings, case: DatasetCase, output: str, role: ProviderRole
+    settings: Settings,
+    case: DatasetCase,
+    output: str,
+    role: ProviderRole,
+    pricing_profile: str = "standard",
 ) -> tuple[EvaluationResult, int | None, int | None, int | None, int]:
     """Julga uma resposta e retorna também usage e latência reais."""
-    prompt = f"""Você é um juiz de avaliação independente. Avalie somente pelos dados abaixo.
-Retorne APENAS JSON: {{"score":0.0,"passed":false,"reason":"...","evidence":["..."]}}.
-O campo passed deve ser score >= {case.threshold}. O racional deve citar evidências concretas.
-
-PERGUNTA:
-{case.input}
-
-GROUND TRUTH:
-{case.expected_output}
-
-DEFINIÇÃO DE CORRETO:
-{case.correctness_definition}
-
-RUBRICA:
-{json.dumps(case.rubric, ensure_ascii=False)}
-
-RESPOSTA DO AGENTE:
-{output}
-"""
+    prompt = judge_prompt(case, output)
     response = await invoke_role(settings, role, prompt)
+    metrics = response_metrics(response, pricing_profile)
     try:
         decision = JudgeDecision.model_validate_json(_json_object(response.text))
     except (ValidationError, json.JSONDecodeError) as error:
         raise JudgeParseError(
-            "O juiz retornou JSON incompatível com o contrato fechado."
+            "O juiz retornou JSON incompatível com o contrato fechado.", metrics
         ) from error
     passed = decision.passed and decision.score >= case.threshold
     result = EvaluationResult(
@@ -73,6 +66,13 @@ RESPOSTA DO AGENTE:
         rubric=case.rubric,
         score=decision.score,
         threshold=case.threshold,
+        metrics=metrics,
+        judge_provider=response.provider,
+        request_id=response.request_id,
+        score_type="rating",
+        rationale_available=True,
+        protocol_version=PROTOCOL_VERSION,
+        evaluated_state=evaluation_state(case, output),
     )
     return (
         result,

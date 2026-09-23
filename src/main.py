@@ -9,8 +9,10 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.benchmark_api import benchmark_router
 from src.config import Settings
 from src.dataset import load_dataset
+from src.eval.benchmark import BenchmarkManager
 from src.eval.bias import BiasAuditError, BiasAuditManager, BiasExperiment
 from src.eval.datasets import DatasetValidationError, get_dataset, list_datasets, parse_import
 from src.eval.live import LiveEvaluationManager, LiveSessionError, LiveSessionNotFoundError
@@ -41,13 +43,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     store = SQLiteStore(resolved_settings.database_path)
     live_manager = LiveEvaluationManager(resolved_settings, store)
     bias_manager = BiasAuditManager(resolved_settings, store)
+    benchmark_manager = BenchmarkManager(resolved_settings, store)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await store.initialize()
+        await benchmark_manager.initialize()
         await store.mark_running_sessions_interrupted()
         await store.mark_running_bias_audits_interrupted()
         yield
+        await benchmark_manager.shutdown()
         await live_manager.shutdown()
         await bias_manager.shutdown()
         await store.close()
@@ -55,9 +60,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="agent-eval-harness",
         summary="Avaliação de agentes com racional auditável.",
-        version="1.0.0",
+        version="1.1.0",
         lifespan=lifespan,
     )
+    app.include_router(benchmark_router(benchmark_manager))
+    app.state.benchmark_manager = benchmark_manager
     app.state.settings = resolved_settings
     app.state.store = store
     app.state.live_manager = live_manager
@@ -214,7 +221,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/api/eval/run")
     async def evaluate(request: RunRequest) -> RunVerdict:
-        return await run_evaluation(request, store)
+        return await run_evaluation(request, store, resolved_settings)
 
     @app.get("/api/eval/runs")
     async def list_runs(

@@ -32,7 +32,7 @@ async def test_health(client: AsyncClient) -> None:
     response = await client.get("/api/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "database": "ready", "version": "1.0.0"}
+    assert response.json() == {"status": "ok", "database": "ready", "version": "1.1.0"}
 
 
 async def test_models_endpoint_does_not_expose_keys(tmp_path: Path) -> None:

@@ -13,6 +13,7 @@ class EvaluationMethod(StrEnum):
     DETERMINISTIC_MATCH = "deterministic_match"
     PROGRAMMATIC_CHECK = "programmatic_check"
     LLM_AS_JUDGE = "llm_as_judge"
+    DECISION_MODEL = "decision_model"
 
 
 class FinalVerdict(StrEnum):
@@ -120,6 +121,22 @@ class DatasetCase(BaseModel):
     metric_limits: MetricLimits = Field(default_factory=MetricLimits)
 
 
+class EvaluationMetrics(BaseModel):
+    """Medição individual; ausência nunca significa consumo zero."""
+
+    latency_ms: int | None = Field(default=None, ge=0)
+    queue_ms: int | None = Field(default=None, ge=0)
+    input_tokens: int | None = Field(default=None, ge=0)
+    output_tokens: int | None = Field(default=None, ge=0)
+    total_tokens: int | None = Field(default=None, ge=0)
+    cached_input_tokens: int | None = Field(default=None, ge=0)
+    cost_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    cost_status: Literal["reported", "estimated", "unavailable"] = "unavailable"
+    cost_source: Literal["provider_response", "pricing_catalog", "mixed", "none"] = "none"
+    cost_formula: str | None = None
+    pricing_version: str | None = None
+
+
 class EvaluationResult(BaseModel):
     """Resultado completo de um método de avaliação."""
 
@@ -135,6 +152,14 @@ class EvaluationResult(BaseModel):
     rubric: list[str] = Field(default_factory=list)
     score: float | None = Field(default=None, ge=0, le=1)
     threshold: float | None = Field(default=None, ge=0, le=1)
+    metrics: EvaluationMetrics | None = None
+    judge_provider: str | None = None
+    upstream_provider: str | None = None
+    request_id: str | None = None
+    score_type: Literal["probability", "rating"] | None = None
+    rationale_available: bool | None = None
+    protocol_version: str | None = None
+    evaluated_state: str | None = None
 
 
 class RunMetrics(BaseModel):
@@ -146,13 +171,14 @@ class RunMetrics(BaseModel):
     total_tokens: int | None
     cost_usd: float | None
     cost_status: Literal["reported", "estimated", "unavailable"]
-    cost_source: Literal["provider_response", "pricing_catalog", "none"]
+    cost_source: Literal["provider_response", "pricing_catalog", "mixed", "none"]
     time_to_first_token_ms: int | None = None
     generation_ms: int | None = None
     judge_ms: int | None = None
     total_latency_ms: int | None = None
     cost_formula: str | None = None
     pricing_version: str | None = None
+    agent_metrics: EvaluationMetrics | None = None
 
 
 class RunVerdict(BaseModel):
@@ -252,6 +278,8 @@ class SessionSummary(BaseModel):
     known_cost_usd: float
     runs_without_cost: int
     judge_scores: list[float]
+    methods: dict[str, Any] = Field(default_factory=dict)
+    comparison: dict[str, Any] = Field(default_factory=dict)
 
 
 class EvaluationSession(BaseModel):
@@ -318,7 +346,7 @@ class HealthResponse(BaseModel):
 
     status: Literal["ok"] = "ok"
     database: Literal["ready"] = "ready"
-    version: str = "1.0.0"
+    version: str = "1.1.0"
 
 
 class ModelRoleStatus(BaseModel):
